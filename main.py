@@ -16,11 +16,13 @@ def add_repository(baseurl, provider, organization, repo, token):
     try:
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()
-        return True, f"Successfully added {repo}: {response.status_code}"
+        #return T
     except requests.exceptions.RequestException as e:
+        if e.response.status_code == 409:
+            return False, f"Repository {repo} already exists: {e.response.status_code}, Response: {e.response.text}"
         return False, f"Failed to add {repo}: {e.response.status_code if e.response else 'N/A'}, Response: {e.response.text if e.response else 'N/A'}"
     updateRepositoryIntegrationsSettings()
-    return
+    return True, f"Successfully added {repo}: {response.status_code}"
 
 
 # PATCH /organizations/{provider}/{remoteOrganizationName}/repositories/{repositoryName}/integrations/providerSettings
