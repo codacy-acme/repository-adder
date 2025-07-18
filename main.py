@@ -1,5 +1,6 @@
 import requests
 import argparse
+import time
 
 def add_repository(baseurl, provider, organization, repo, token):
     headers = {
@@ -51,6 +52,7 @@ def process_files(file_path, baseurl, provider, organization, token):
             if repo:
                 success, message = add_repository(baseurl, provider, organization, repo, token)
                 print(message)
+                time.sleep(2)  # To avoid hitting API rate limits
 
 def main():
     print('\nWelcome to Codacy Integration Helper - A solution to Add Repositories\n')
