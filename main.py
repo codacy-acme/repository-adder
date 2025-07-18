@@ -15,6 +15,7 @@ def add_repository(baseurl, provider, organization, repo, token):
     }
     url = f'{baseurl}/api/v3/repositories'
     try:
+        print(f"Adding repository {repo} to Codacy...")
         response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()
         #return T
@@ -22,12 +23,18 @@ def add_repository(baseurl, provider, organization, repo, token):
         if e.response.status_code == 409:
             return False, f"Repository {repo} already exists: {e.response.status_code}, Response: {e.response.text}"
         return False, f"Failed to add {repo}: {e.response.status_code if e.response else 'N/A'}, Response: {e.response.text if e.response else 'N/A'}"
-    updateRepositoryIntegrationsSettings()
+    update_repository_integrations_settings(baseurl, provider, organization, repo, token)
     return True, f"Successfully added {repo}: {response.status_code}"
 
 
 # PATCH /organizations/{provider}/{remoteOrganizationName}/repositories/{repositoryName}/integrations/providerSettings
 def update_repository_integrations_settings(baseurl, provider, remoteOrganizationName, repositoryName, token):
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'api-token': token,
+        'caller': 'codacy-integration-helper'
+    }
     data = {
         "commitStatus": False,
         "pullRequestComment": False,
@@ -40,9 +47,9 @@ def update_repository_integrations_settings(baseurl, provider, remoteOrganizatio
     try:
         response = requests.patch(url, headers=headers, json=data)
         response.raise_for_status()
-        return True, f"Successfully updated integration settings {repo}: {response.status_code}"
+        return True, f"Successfully updated integration settings {repositoryName}: {response.status_code}"
     except requests.exceptions.RequestException as e:
-        return False, f"Failed to update integrations settings {repo}: {e.response.status_code if e.response else 'N/A'}, Response: {e.response.text if e.response else 'N/A'}"
+        return False, f"Failed to update integrations settings {repositoryName}: {e.response.status_code if e.response else 'N/A'}, Response: {e.response.text if e.response else 'N/A'}"
     return
 
 def process_files(file_path, baseurl, provider, organization, token):
